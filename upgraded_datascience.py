@@ -37,7 +37,7 @@ def add_new_user():
     while True:
         try:
             # Prompt the user for input and validate the data
-            name = input("Name: ").strip()
+            name = input("Name (Name_Lastname): ").strip()
             if not name:  # Ensure the name is not empty
                 raise ValueError("Name cannot be empty")
             age = int(input("Age: "))
