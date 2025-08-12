@@ -1,4 +1,3 @@
-"""User database management system with data visualization."""
 import matplotlib.pyplot as plt
 import pandas as pd
 import sqlite3
@@ -6,15 +5,10 @@ import os
 
 
 def connect_db():
-    """Create connection to database.
-    Returns:
-        sqlite3.Connection: Database connection object
-    """
     return sqlite3.connect("my_database.db")
 
 
 def initialize_database():
-    """Create users table if it doesn't exist."""
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute('''
@@ -31,26 +25,23 @@ def initialize_database():
 
 
 def add_new_user():
-    """Add new user to database with input validation."""
     conn = connect_db()
     cursor = conn.cursor()
     while True:
         try:
-            # Prompt the user for input and validate the data
             name = input("Name (Name_Lastname): ").strip()
-            if not name:  # Ensure the name is not empty
+            if not name:
                 raise ValueError("Name cannot be empty")
             age = int(input("Age: "))
-            if age <= 0:  # Ensure the age must be a positive number
+            if age <= 0:
                 raise ValueError("Age must be a positive number")
             iq = int(input("IQ: "))
-            if iq <= 0:  # Ensure the IQ is a positive number
+            if iq <= 0:
                 raise ValueError("IQ must be a positive number")
             bench_press = int(input("Bench press (kg): "))
-            if bench_press < 0:  # Ensure the bench press is not negative
+            if bench_press < 0:
                 raise ValueError("Bench press cannot be negative")
 
-            # If all inputs are valid, insert the new user into the database
             new_user = (name, age, iq, bench_press)
             cursor.execute(
                 "INSERT INTO users (name, age, iq, bench_press) VALUES (?, ?, ?, ?)",
@@ -58,12 +49,10 @@ def add_new_user():
             )
             conn.commit()
             print("New user was added")
-            break  # Exit the loop if everything is ok
+            break
         except ValueError as e:
-            # Handle invalid input errors and prompt the user to try again
             print(f"Invalid input: {e}. Please try again")
         except Exception as e:
-            # Handle any unexpected errors and exit loop
             print(f"An unexpected error occurred: {e}")
             conn.rollback()
             break
@@ -71,10 +60,8 @@ def add_new_user():
 
 
 def delete_user():
-    """Delete user from database by ID."""
     conn = connect_db()
     cursor = conn.cursor()
-    # First show all users
     df = read_db()
     if df.empty:
         print("Database is empty. Nothing to delete.")
@@ -84,33 +71,28 @@ def delete_user():
     print(df.to_string(index=False))
     while True:
         try:
-            # Prompt the user for input and validate the data
             user_id = int(input("Enter user id to delete: "))
-            # Check if user exists
             cursor.execute("SELECT COUNT(*) FROM users WHERE id=?", (user_id,))
             if cursor.fetchone()[0] == 0:
                 print("User with this ID does not exist. Please try again")
                 continue
             cursor.execute("DELETE FROM users WHERE id=?", (user_id,))
-            conn.commit()  # Saving changes
+            conn.commit()
             print("User was deleted from DataBase")
             break
         except ValueError:
-            # Handle invalid input error and prompt the user to not enter the string
             print("Invalid input: Please enter a valid ID (number).")
             continue
         except Exception as e:
             print(f"Error deleting user: {e}")
-            conn.rollback()  # Roll back changes in case of error
+            conn.rollback()
             break
     conn.close()
 
 
 def update_user():
-    """Update user from database by ID."""
     conn = connect_db()
     cursor = conn.cursor()
-    # First show all users
     df = read_db()
     if df.empty:
         print("Database is empty. Nothing to update.")
@@ -122,7 +104,6 @@ def update_user():
     while True:
         try:
             user_id = int(input("Enter user id to update: "))
-            # Check if user exists
             cursor.execute("SELECT COUNT(*) FROM users WHERE id=?", (user_id,))
             if cursor.fetchone()[0] == 0:
                 print("User with this ID does not exist. Please try again")
@@ -202,26 +183,20 @@ def update_user():
 
 
 def read_db():
-    """Read all users from database.
-    Returns:
-        pandas.DataFrame: DataFrame with all users data
-    """
     query = 'SELECT * FROM users'
     conn = connect_db()
     try:
-        df = pd.read_sql_query(query, conn)  # Using pandas to read the database
+        df = pd.read_sql_query(query, conn)
     except Exception as e:
         print(f"Error reading database: {e}")
-        df = pd.DataFrame()  # Return empty DataFrame on error
+        df = pd.DataFrame()
     finally:
         conn.close()
     return df
 
 
 def draw_scatter():
-    """Create and display scatter plot of IQ vs Bench Press with unique filename."""
     df = read_db()
-    # Check if data exists
     if df.empty:
         print("No data available for visualization")
         return
@@ -236,7 +211,6 @@ def draw_scatter():
     plt.ylabel("Bench press (kg)", fontsize=12)
     plt.grid(True, alpha=0.3)
 
-    # Add correlation coefficient if we have enough data
     if len(df) > 1:
         correlation = df['iq'].corr(df['bench_press'])
         plt.text(0.05, 0.95, f'Correlation: {correlation:.3f}',
@@ -264,7 +238,6 @@ def draw_scatter():
 
 
 def show_statistics():
-    """Show basic statistics of the data."""
     df = read_db()
     if df.empty:
         print("No data available for statistics")
@@ -280,8 +253,6 @@ def show_statistics():
 
 
 def main():
-    """Main application function."""
-    # Initialize database
     initialize_database()
     print("=== User Database Manager ===")
     while True:
